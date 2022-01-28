@@ -1,12 +1,58 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
+import axios from 'axios';
+import { useHistory } from 'react-router-dom';
 
 const Login = () => {
+    const [ credentials, setCredentials ] = useState({
+        username: '',
+        password: ''
+    });
+    const [ error, setError ] = useState('');
+    const { push } = useHistory();
+
+    const handleChange = e => {
+        setCredentials({
+            ...credentials,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const handleSubmit = e => {
+        e.preventDefault();
+
+        axios.post('http://localhost:5000/api/login', credentials)
+            .then(res => {
+                localStorage.setItem('token', res.data.token);
+                push('/view');
+            })
+            .catch(err => setError(err.response.data.error))
+    };
     
     return(<ComponentContainer>
         <ModalContainer>
             <h1>Welcome to Blogger Pro</h1>
             <h2>Please enter your account information.</h2>
+            <FormGroup onSubmit={handleSubmit}>
+                <Label>Username</Label>
+                <Input
+                    type='text'
+                    name='username'
+                    value={credentials.username}
+                    onChange={handleChange}
+                    id='username'
+                />
+                <Label>Password</Label>
+                <Input
+                    type='password'
+                    name='password'
+                    value={credentials.password}
+                    onChange={handleChange}
+                    id='password'
+                />
+                <Button id='submit'>Submit</Button>
+            </FormGroup>
+            {error && <p id='error'>{error}</p>}
         </ModalContainer>
     </ComponentContainer>);
 }
@@ -33,6 +79,7 @@ const ModalContainer = styled.div`
     background: white;
     padding: 2rem;
     text-align: center;
+    margin: auto;
 `
 
 const Label = styled.label`
